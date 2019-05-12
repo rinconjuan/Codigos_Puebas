@@ -4,22 +4,24 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string>
 
-typedef struct 
-{
-int quantity;
-int product_id;
-char flag;
-}Shared_mem;
+using namespace std;
 
-const char *name = "MemoriaCompartida";
+#define BUFFER_SIZE 10
 
-int main(int argc, char const *argv[])
+typedef unsigned char uchar;
+
+const int SIZE = 4096; // Size in bytes of the shared memory section
+const char *name = "MemoriaCompartida"; // Name of the shared memory section\
+
+typedef struct{
+	int number;
+}item;
+
+int main(int argc, char *argv[])
 {
 	
-	int shm_fd_memoria;
-	void *ptr_memoria; 
-	Shared_mem men_memoria;
 
 	shm_fd_memoria = shm_open(name, O_RDWR, 0666);
 
@@ -30,8 +32,25 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
 
-	printf("TOO NICE");
 
+
+	while(cont < 10)
+	{
+
+		int x = 10;
+
+		
+		in = (int*)((uchar*)ptr_memoria);
+		queue[*in].number = x;
+
+		usleep(200*1000); 
+		cont ++;
+
+	}
+
+	close(shm_fd_memoria);
+	
+	
 
 
 
