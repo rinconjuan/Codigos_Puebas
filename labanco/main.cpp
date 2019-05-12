@@ -11,12 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct
-{
-int quantity;
-int product_id;
-char flag;
-}Shared_mem;
+
 
 
 
@@ -35,13 +30,16 @@ int main(int argc, char *argv[])
         w.cajas = argv[1];
         w.shm_fd_memoria = shm_open(w.name, O_CREAT | O_RDWR, 0666);
         ftruncate(w.shm_fd_memoria, w.SIZE);
+
         w.mostrarcajas();
         w.show();
         w.setWindowTitle("BANCO");
 
 
 
+
         return a.exec();
+        w.leermemoria();
     }
     else
     {
