@@ -10,15 +10,17 @@
 #include <QtGui>
 #include <stdio.h>
 #include <stdlib.h>
-
-
-
-
+#include <semaphore.h>
+#include <QTimer>
 
 using namespace std;
 
+
 int main(int argc, char *argv[])
 {
+
+
+
     if (argc == 2)
     {
         // PARTE DE MEMORIA COMPARTIDA.
@@ -28,18 +30,13 @@ int main(int argc, char *argv[])
         QApplication a(argc, argv);
         banco w;
         w.cajas = argv[1];
-        w.shm_fd_memoria = shm_open(w.name, O_CREAT | O_RDWR, 0666);
-        ftruncate(w.shm_fd_memoria, w.SIZE);
-
         w.mostrarcajas();
+        w.iniciar();
         w.show();
         w.setWindowTitle("BANCO");
-
-
-
-
         return a.exec();
-        w.leermemoria();
+
+
     }
     else
     {
@@ -48,3 +45,5 @@ int main(int argc, char *argv[])
 
 
 }
+
+

@@ -12,7 +12,6 @@
 #include <QScrollArea>
 #include <QWidget>
 #include <QMainWindow>
-
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -23,6 +22,9 @@
 #include <QtGui>
 #include <stdio.h>
 #include <stdlib.h>
+#include <QTimer>
+#include <QDebug>
+
 
 using namespace std;
 
@@ -32,6 +34,10 @@ banco::banco(QWidget *parent) :
 
 {
      ui->setupUi(this);
+
+     timermem = new QTimer(this);
+     connect(timermem, SIGNAL(timeout()), this, SLOT(leermemoria()));
+     timermem-> start(1000);
 
 
 }
@@ -70,26 +76,65 @@ void banco::mostrarcajas()
 
 void banco::leermemoria()
 {
-    int conta;
-    while(conta < 200);
+    shm_fd_memoria = shm_open(name, O_RDWR, 0666);
+    ptr_memoria =mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd_memoria, 0);
+    name1= (char *)ptr_memoria;
+    apellido1 = (char *)name1 + sizeof(name1);
+    id1 = (char *)apellido1 + sizeof(apellido1);
+    estado = (int *)id1 + sizeof(id1);
+
+    if(*estado == 1)
     {
-        Shared_mem men_memoria;
 
-        shm_fd_memoria = shm_open(name, O_RDWR, 0666);
-        ptr_memoria = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd_memoria, 0);
-        ((Shared_mem*)ptr_memoria)->nombre;
+        printf("HOLA\n");
+        //MOSTRAR CLIENTE EN GIU
+        i += 70;
+        QVector<QLabel*> numclientes(1000);
 
-        printf("%c\n", men_memoria.nombre);
-        printf("%i\n", men_memoria.quantity);
-        usleep(200*1000);
+        QLabel  *Cliente = new QLabel(this);
+        Cliente->setGeometry(10+i,100,100,100);
 
-        conta ++;
+        Cliente->setText(name1);
+        Cliente->show();
+        numclientes.insert(numc,Cliente);
+        numc += 1;
+
+    }else
+    {
+        printf(" FAIL\n");
     }
 
 
+    estado = 0;
+    printf("NOMBRE = %s\n", name1);
+    printf("APELLIDO = %s\n", apellido1);
+    printf("ID= %s\n", id1);
+
+    //memo.nombre = ((Shared_mem*)ptr_memoria)->nombre;
+    //memo.apellido = ((Shared_mem*)ptr_memoria)->apellido;
+    //memo.id = ((Shared_mem*)ptr_memoria)->id
+    //((Shared_mem*)ptr_memoria)->nombre;
+
+
 }
 
-void banco::on_pushButton_clicked()
+void banco::iniciar()
 {
-    leermemoria();
+    shm_fd_memoria = shm_open(name, O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_fd_memoria, SIZE);
+    sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0644, 1);
+    sem_init(sem_id,1,1);
+
+
 }
+
+void banco::mostrarclientes()
+{
+
+
+
+
+
+}
+
+
