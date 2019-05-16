@@ -26,6 +26,7 @@
 #include <QDebug>
 
 
+
 using namespace std;
 
 banco::banco(QWidget *parent) :
@@ -37,7 +38,9 @@ banco::banco(QWidget *parent) :
 
      timermem = new QTimer(this);
      connect(timermem, SIGNAL(timeout()), this, SLOT(leermemoria()));
-     timermem-> start(1000);
+     timermem-> start(10);
+
+
 
 
 }
@@ -70,71 +73,178 @@ void banco::mostrarcajas()
         Caj ->setPixmap(test.scaled(w,h,Qt::KeepAspectRatio));
         Caj->show();
         numcajas.insert(k,Caj);
+        //ui->label->deleteLater();
     }
 
 }
 
 void banco::leermemoria()
 {
-    shm_fd_memoria = shm_open(name, O_RDWR, 0666);
-    ptr_memoria =mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd_memoria, 0);
+    ptr_memoria =mmap(0, SIZE, PROT_READ |  PROT_WRITE, MAP_SHARED, shm_fd_memoria, 0);
+    ptr_aviso =mmap(0, SIZE, PROT_READ |  PROT_WRITE, MAP_SHARED, shm_fd_aviso, 0);
+
+    // MEMORIA GENERAL
+
+    QLabel  *Cliente = new QLabel(this);
+
     name1= (char *)ptr_memoria;
     apellido1 = (char *)name1 + sizeof(name1);
     id1 = (char *)apellido1 + sizeof(apellido1);
     estado = (int *)id1 + sizeof(id1);
 
+
+    reset = (int *)ptr_aviso;
+    printf("RESET= %i\n", *reset);
+
+
+    printf("ESTADO %i\n", *estado);
+
     if(*estado == 1)
     {
+        j += 70;
+        nucli << new QLabel(this);
 
-        printf("HOLA\n");
-        //MOSTRAR CLIENTE EN GIU
-        i += 70;
-        QVector<QLabel*> numclientes(1000);
+        QPixmap pix("/home/juan/labanco/person.png");
+        QPixmap ima = pix.scaled(120,120);
+        nucli.at(numc) -> setPixmap(ima);
+        int w = Cliente->width();
+        int h = Cliente->height();
+        nucli.at(numc) -> setGeometry(10+j,175,50,50);
+        nucli.at(numc) -> setPixmap(ima);
+        nucli.at(numc) -> setPixmap(ima.scaled(w,h,Qt::KeepAspectRatio));
 
-        QLabel  *Cliente = new QLabel(this);
-        Cliente->setGeometry(10+i,100,100,100);
+        nombrescliente << new QLabel(this);
 
-        Cliente->setText(name1);
-        Cliente->show();
-        numclientes.insert(numc,Cliente);
-        numc += 1;
+        nombrescliente.at(numc) -> setGeometry(10+j,250,50,50);
+        nombrescliente.at(numc)->setText(name1);
 
-    }else
+
+
+        idsclientes << new QLabel(this);
+        idsclientes.at(numc) -> setGeometry(10+j,215,50,50);
+        idsclientes.at(numc) ->setText(id1);
+
+
+        nombrescliente.at(numc)->show();
+        idsclientes.at(numc)->show();
+        nucli.at(numc) -> show();
+
+        numc ++;
+
+        //QPixmap clien = QPixmap(QString::fromUtf8("/home/juan/labanco/person.png"));
+        /*int w = Cliente->width();
+        int h = Cliente->height();
+        nucli.at(0) -> setGeometry(10+i,100,50,50);
+        nucli.at(0) -> setPixmap(clien);
+        nucli.at(0) -> setPixmap(clien.scaled(w,h,Qt::KeepAspectRatio));
+        nucli.at(0) -> show();*/
+
+
+
+
+        //nucli.at(0) -> setText(" 1111111111111234567890-");
+        //nucli.at(0)-> show();
+
+
+        //QVector<QLabel*> numclientes(1000);
+        //Cliente -> setGeometry(10+i,100,50,50);
+        //Cliente -> setPixmap(clien);
+        //Cliente ->setPixmap(clien.scaled(w,h,Qt::KeepAspectRatio));
+
+        //Cliente->setGeometry(10+i,100,100,100);
+
+        // Cliente->setText(name1);
+        //Cliente->show();
+
+        //numclientes.insert(numc,Cliente);
+        //numc += 1;
+
+
+        // MEMORIA AVISOS
+
+    }
+    else
     {
         printf(" FAIL\n");
+
+    }
+    if(*reset == 2)
+    {
+       printf("-------------------------------------------------------------------------\n");
+
+       nucli.at(ethan)->setText(" ");
+       nucli.at(ethan)->show();
+       nombrescliente.at(ethan)->setText(" ");
+       idsclientes.at(ethan) -> setText(" ");
+       ethan ++;
+
+
     }
 
+    if (*reset==0)
+    {
 
-    estado = 0;
+        printf("ETAHN MK");
+
+
+    }
+
+    /*
     printf("NOMBRE = %s\n", name1);
     printf("APELLIDO = %s\n", apellido1);
     printf("ID= %s\n", id1);
+    *estado = 0;
+    *reset = 0;*/
 
-    //memo.nombre = ((Shared_mem*)ptr_memoria)->nombre;
+     //unlink()
+
+    //memo.nombre = ((Shzzared_mem*)ptr_memoria)->nombre;
     //memo.apellido = ((Shared_mem*)ptr_memoria)->apellido;
     //memo.id = ((Shared_mem*)ptr_memoria)->id
     //((Shared_mem*)ptr_memoria)->nombre;
+
+    *reset = 0;
+    *estado = 0;
+
 
 
 }
 
 void banco::iniciar()
 {
-    shm_fd_memoria = shm_open(name, O_CREAT | O_RDWR, 0666);
-    ftruncate(shm_fd_memoria, SIZE);
-    sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0644, 1);
-    sem_init(sem_id,1,1);
+
+    sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0644, 1); // CREACION DE SEMAFORO MEMORIA
+    sem_init(sem_id,1,1); // INICIALIZACION DE SEMAFORO
+
+    sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0644, atoi(cajas));
+    sem_init(sem_idc,atoi(cajas),atoi(cajas));
+
+    shm_fd_memoria = shm_open(name, O_RDWR, 0666);
+
+
+    shm_fd_aviso = shm_open(aviso, O_RDWR, 0666);
+
+
 
 
 }
 
 void banco::mostrarclientes()
-{
+{    
 
 
+    //Cliente-> hide();
 
 
 
 }
+
+void banco::avisos()
+{
+
+
+}
+
+
 
 

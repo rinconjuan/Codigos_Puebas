@@ -36,9 +36,6 @@ public:
     void mostrarclientes();
 
 
-    sem_t sem_memoria;
-    sem_t sem_cajas;
-
     typedef struct
     {
         char *nombre;
@@ -47,26 +44,43 @@ public:
     }Shared_mem;
 
     int shm_fd_memoria; // Descriptor of shared memory
+    int shm_fd_aviso;
     void *ptr_memoria; // Pointer to shared memory
+    void *ptr_aviso;
+
+
     char *name1;
     char *apellido1;
     char *id1;
     int *estado = 0;
+
+
+    int *reset = 0;
+    int ethan = 0;
+
+
     int numc  = 0;
 
     const int SIZE = sizeof(Shared_mem); // Size in bytes of the shared memory section
     const char *name = "MemoriaCompartida"; // Name of the shared memory section
+    const char *aviso = "MemoriaAviso";
 
     const char *semaforomem = "smpmem"; // SEMAFORO DE LA MEMORIA
     const char *semaforocajas = "sempcajas"; // SEMAFORO DE LAS CAJAS
 
     char clientes[1000]; // IGNORE ESTA MIERDA
 
+    QList<QLabel*> nucli;
+    QList<QLabel*> nombrescliente;
+    QList<QLabel*> idsclientes;
+
+
     Shared_mem memo;
     ~banco();
 
 private slots:
     void leermemoria();
+    void avisos();
 
 
 private:

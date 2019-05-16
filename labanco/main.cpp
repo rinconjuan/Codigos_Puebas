@@ -1,4 +1,5 @@
 #include "banco.h"
+#include "ui_banco.h"
 #include <QApplication>
 #include <string.h>
 #include <sys/mman.h>
@@ -32,6 +33,17 @@ int main(int argc, char *argv[])
         w.cajas = argv[1];
         w.mostrarcajas();
         w.iniciar();
+
+        shm_unlink(w.name);
+
+        w.shm_fd_memoria = shm_open(w.name, O_CREAT | O_RDWR, 0666); // CREACION DE MEMORIA
+        w.shm_fd_aviso = shm_open(w.aviso, O_CREAT | O_RDWR, 0666);
+
+        ftruncate(w.shm_fd_memoria, w.SIZE);
+        ftruncate(w.shm_fd_aviso, w.SIZE);
+
+
+
         w.show();
         w.setWindowTitle("BANCO");
         return a.exec();
