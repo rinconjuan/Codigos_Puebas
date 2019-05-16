@@ -6,6 +6,11 @@
 #include <fcntl.h>
 #include <string>
 #include <semaphore.h>
+#include <time.h>
+#include <math.h>
+#include <ctime>
+#include <cmath>
+#include <iostream>
 
 using namespace std;
 
@@ -21,6 +26,7 @@ const int SIZE = sizeof(Shared_mem); // Size in bytes of the shared memory secti
 const char *name = "MemoriaCompartida"; // Name of the shared memory section
 const char *semaforomem = "smpmem";
 const char *semaforocajas = "sempcajas";
+const char *aviso = "MemoriaAviso";
 
 
 int main(int argc, char *argv[])
@@ -29,8 +35,10 @@ int main(int argc, char *argv[])
 	//sem_close(sem_id); // CERRANDO SEMAFORO POR SI FALLA EL PROGRAMA Y QUEDA ABIERTO;
 	
 	int shm_fd_memoria;
+	int shm_fd_aviso;
 	void *ptr_memoria;
- 
+ 	void *ptr_aviso;
+
 	char *nombrec;
 	char *apellidoc;
 	char *idc;
@@ -39,12 +47,31 @@ int main(int argc, char *argv[])
 	char *apellido1;
 	char *ed1;
 	int *estado = 0;
+
+	int  *reset = 0;
+
+	srand(time(NULL));
+
+	int tiempo = (5000000*10)+rand()%((2000001*10)-1);
+	int tiempo2 = (500*1000)+rand()%((2001*1000)-1);
+	int realsleep = tiempo2 * tiempo;
+
+	//reloj 
+
+	float x,y;
+
+	clock_t time_req;
+
+	time_req = clock();	
+
 	
 	nombrec = argv[1];	
 	apellidoc = argv[2];
 	idc = argv[3];
 	
 	shm_fd_memoria = shm_open(name, O_RDWR, 0666);
+
+	shm_fd_aviso = shm_open(aviso, O_RDWR, 0666);
 
 	if(shm_fd_memoria==-1){ 
 		printf("Memoria NO existe\n");
@@ -60,8 +87,12 @@ int main(int argc, char *argv[])
 	int inter = 0;
 
 	sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0600);
+	sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0600);
 	 // CONSULTA DE SEMAFORO; 
 	ptr_memoria = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd_memoria, 0);
+	ptr_aviso = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd_aviso, 0);	
+
+
 	printf("SEM_ID = %i\n", sem_id);
 	printf("ESPERANDO SEMAFORO...\n");	
 	sem_wait(sem_id);
@@ -71,6 +102,7 @@ int main(int argc, char *argv[])
     apellido1 = (char *)name1 + sizeof(name1);
     ed1 = (char *)apellido1 + sizeof(apellido1);
     estado = (int *)ed1 + sizeof(ed1);
+    reset = (int *)ptr_aviso;
 
 
 
@@ -80,14 +112,31 @@ int main(int argc, char *argv[])
 
 
 	printf("ESPERANDO SUSCRIPCION ...\n");
-	usleep(3000*1000);
+	for(int h = 0; h < (1000*10000); h++)
+	{
+		
+	}
 	printf("CLIENTE SUSCRITO =) ");	
 	sem_post(sem_id);
 	printf("FINALIZO \n");
-	*estado = 1;
-	close(shm_fd_memoria);
-	sem_close(sem_id);
+	
 
+
+	sem_wait(sem_idc);
+	*estado = 1;
+	printf("TOMO %i\n", cont);
+
+	for(int i=0; i< realsleep ; i++)
+	{
+		y = log(pow(i,500000));
+	}
+	time_req = clock();
+
+	cout << "Using pow function, it took " << (float)time_req/CLOCKS_PER_SEC << " seconds" << endl;
+
+	sem_post(sem_idc);	
+	*reset = 2;	
+	close(shm_fd_memoria);
 
 	return 0;
 }
