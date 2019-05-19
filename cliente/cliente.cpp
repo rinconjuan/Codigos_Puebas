@@ -26,6 +26,7 @@ const int SIZE = sizeof(Shared_mem); // Size in bytes of the shared memory secti
 const char *name = "MemoriaCompartida"; // Name of the shared memory section
 const char *semaforomem = "smpmem";
 const char *semaforocajas = "sempcajas";
+const char *semaforomuffler = "semmuffler";
 const char *aviso = "MemoriaAviso";
 
 
@@ -49,6 +50,10 @@ int main(int argc, char *argv[])
 	int *estado = 0;
 
 	int  *reset = 0;
+	int *muffler = 0;
+	//int *posicion  = 0;
+	int posicion = 0;
+	int *envio = 0;
 
 	srand(time(NULL));
 
@@ -70,7 +75,6 @@ int main(int argc, char *argv[])
 	idc = argv[3];
 	
 	shm_fd_memoria = shm_open(name, O_RDWR, 0666);
-
 	shm_fd_aviso = shm_open(aviso, O_RDWR, 0666);
 
 	if(shm_fd_memoria==-1){ 
@@ -88,9 +92,10 @@ int main(int argc, char *argv[])
 
 	sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0600);
 	sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0600);
+	sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0600);
 	 // CONSULTA DE SEMAFORO; 
-	ptr_memoria = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd_memoria, 0);
-	ptr_aviso = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd_aviso, 0);	
+	ptr_memoria = mmap(0, SIZE, PROT_WRITE | PROT_READ, MAP_SHARED, shm_fd_memoria, 0);
+	ptr_aviso = mmap(0, SIZE, PROT_WRITE | PROT_READ, MAP_SHARED, shm_fd_aviso, 0);	
 
 
 	printf("SEM_ID = %i\n", sem_id);
@@ -102,8 +107,15 @@ int main(int argc, char *argv[])
     apellido1 = (char *)name1 + sizeof(name1);
     ed1 = (char *)apellido1 + sizeof(apellido1);
     estado = (int *)ed1 + sizeof(ed1);
-    reset = (int *)ptr_aviso;
 
+    reset = (int *)ptr_aviso;
+    sem_wait(sem_muffler);
+    muffler = (int *)reset + sizeof(reset);
+    //posicion = (int *)muffler + sizeof(muffler);
+    posicion = *muffler;
+    envio = (int *)muffler + 64;
+    sem_post(sem_muffler);
+    printf("MUFFLER = %i\n", posicion);
 
 
 	sprintf(name1,nombrec);
@@ -117,26 +129,33 @@ int main(int argc, char *argv[])
 		
 	}
 	printf("CLIENTE SUSCRITO =) ");	
+
 	sem_post(sem_id);
 	printf("FINALIZO \n");
-	
-
 
 	sem_wait(sem_idc);
 	*estado = 1;
 	printf("TOMO %i\n", cont);
 
-	for(int i=0; i< realsleep ; i++)
+	for(int i=0; i< tiempo ; i++)
 	{
-		y = log(pow(i,500000));
+		y = log(pow(i,500));
 	}
 	time_req = clock();
 
 	cout << "Using pow function, it took " << (float)time_req/CLOCKS_PER_SEC << " seconds" << endl;
+	
+	sem_post(sem_idc);
 
-	sem_post(sem_idc);	
-	*reset = 2;	
+	*reset = 2;
+	sem_wait(sem_muffler);
+	*muffler = posicion;
+	*envio = posicion;
+	printf("ENVIO = %i\n", *muffler);
+	sem_post(sem_muffler);
 	close(shm_fd_memoria);
+	close(shm_fd_aviso);
+
 
 	return 0;
 }
