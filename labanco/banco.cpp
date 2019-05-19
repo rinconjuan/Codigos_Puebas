@@ -68,9 +68,9 @@ void banco::mostrarcajas()
         QLabel  *Caj = new QLabel(this);
         int w = Caj->width();
         int h = Caj->height();
-        Caj -> setGeometry(10+i,100,50,50);
+        Caj -> setGeometry(10+i,100,200,200);
         Caj -> setPixmap(test);
-        Caj ->setPixmap(test.scaled(w,h,Qt::KeepAspectRatio));
+        Caj ->setPixmap(test.scaled(w+20,h+20,Qt::KeepAspectRatio));
         Caj->show();
         numcajas.insert(k,Caj);
         //ui->label->deleteLater();
@@ -94,42 +94,51 @@ void banco::leermemoria()
 
 
     reset = (int *)ptr_aviso;
+    muffler = (int *)reset + sizeof(reset);
+    //posicion =(int *)muffler + sizeof(muffler);
+
     printf("RESET= %i\n", *reset);
-
-
     printf("ESTADO %i\n", *estado);
+
+    *muffler = numc;
 
     if(*estado == 1)
     {
         j += 70;
+
         nucli << new QLabel(this);
+
 
         QPixmap pix("/home/juan/labanco/person.png");
         QPixmap ima = pix.scaled(120,120);
         nucli.at(numc) -> setPixmap(ima);
         int w = Cliente->width();
         int h = Cliente->height();
-        nucli.at(numc) -> setGeometry(10+j,175,50,50);
+        nucli.at(numc) -> setGeometry(10+j,225,50,50);
         nucli.at(numc) -> setPixmap(ima);
         nucli.at(numc) -> setPixmap(ima.scaled(w,h,Qt::KeepAspectRatio));
 
         nombrescliente << new QLabel(this);
 
-        nombrescliente.at(numc) -> setGeometry(10+j,250,50,50);
+        nombrescliente.at(numc) -> setGeometry(10+j,280,50,15);
         nombrescliente.at(numc)->setText(name1);
 
 
 
         idsclientes << new QLabel(this);
-        idsclientes.at(numc) -> setGeometry(10+j,215,50,50);
+        idsclientes.at(numc) -> setGeometry(10+j,300,50,15);
         idsclientes.at(numc) ->setText(id1);
 
 
         nombrescliente.at(numc)->show();
         idsclientes.at(numc)->show();
-        nucli.at(numc) -> show();
 
+        nucli.at(numc) -> show();
         numc ++;
+
+
+
+
 
         //QPixmap clien = QPixmap(QString::fromUtf8("/home/juan/labanco/person.png"));
         /*int w = Cliente->width();
@@ -156,6 +165,7 @@ void banco::leermemoria()
         // Cliente->setText(name1);
         //Cliente->show();
 
+
         //numclientes.insert(numc,Cliente);
         //numc += 1;
 
@@ -168,23 +178,30 @@ void banco::leermemoria()
         printf(" FAIL\n");
 
     }
+
+
+
     if(*reset == 2)
     {
-       printf("-------------------------------------------------------------------------\n");
 
-       nucli.at(ethan)->setText(" ");
-       nucli.at(ethan)->show();
-       nombrescliente.at(ethan)->setText(" ");
-       idsclientes.at(ethan) -> setText(" ");
-       ethan ++;
+      printf("__________________________________________________________--%i\n",*muffler);
+      *reset = 0;
+      envio =(int *)muffler + 64;
+      printf("RECBIO = %i\n", *envio);
+      nucli.at(*envio)->setText(" ");
+      nucli.at(*envio)->show();
+      nombrescliente.at(*envio)->setText(" ");
+      idsclientes.at(*envio) -> setText(" ");
+      nombrescliente.at(*envio)-> show();
+      idsclientes.at(*envio)-> show();
 
+
+      ethan ++;
 
     }
 
     if (*reset==0)
     {
-
-        printf("ETAHN MK");
 
 
     }
@@ -208,6 +225,7 @@ void banco::leermemoria()
 
 
 
+
 }
 
 void banco::iniciar()
@@ -218,6 +236,9 @@ void banco::iniciar()
 
     sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0644, atoi(cajas));
     sem_init(sem_idc,atoi(cajas),atoi(cajas));
+
+    sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0644, 1);
+    sem_init(sem_muffler,1,1);
 
     shm_fd_memoria = shm_open(name, O_RDWR, 0666);
 

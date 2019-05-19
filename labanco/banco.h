@@ -57,6 +57,10 @@ public:
 
     int *reset = 0;
     int ethan = 0;
+    int *muffler = 0;
+    int *posicion = 0;
+    int *envio = 0;
+
 
 
     int numc  = 0;
@@ -67,10 +71,14 @@ public:
 
     const char *semaforomem = "smpmem"; // SEMAFORO DE LA MEMORIA
     const char *semaforocajas = "sempcajas"; // SEMAFORO DE LAS CAJAS
+    const char *semaforomuffler = "semmuffler"; // SEMAFORO DE MUFFLER
 
     char clientes[1000]; // IGNORE ESTA MIERDA
 
     QList<QLabel*> nucli;
+
+
+
     QList<QLabel*> nombrescliente;
     QList<QLabel*> idsclientes;
 
