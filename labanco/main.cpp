@@ -39,8 +39,13 @@ int main(int argc, char *argv[])
         w.shm_fd_memoria = shm_open(w.name, O_CREAT | O_RDWR, 0666); // CREACION DE MEMORIA
         w.shm_fd_aviso = shm_open(w.aviso, O_CREAT | O_RDWR, 0666);
 
+
+
+
         ftruncate(w.shm_fd_memoria, w.SIZE);
         ftruncate(w.shm_fd_aviso, w.SIZE);
+
+
 
 
 

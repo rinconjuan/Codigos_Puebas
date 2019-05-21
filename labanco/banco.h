@@ -29,7 +29,9 @@ public:
     char *cajas;
     QLabel Caja[100];
     int i = 0;
-    int j =0;
+    int j = 0;
+    int u = 0;
+    int ggcaja =0;
 
     void mostrarcajas();
     void iniciar();
@@ -60,6 +62,13 @@ public:
     int *muffler = 0;
     int *posicion = 0;
     int *envio = 0;
+    int *nombreenvio = 0;
+    int *cajarecibo =0;
+
+    int pox= 0,poy= 100, poyc = 240,tah = 100,tal= 100;
+
+
+    QVector<QLabel*> numcajas;
 
 
 
@@ -73,6 +82,10 @@ public:
     const char *semaforocajas = "sempcajas"; // SEMAFORO DE LAS CAJAS
     const char *semaforomuffler = "semmuffler"; // SEMAFORO DE MUFFLER
 
+    const char *semaforolynn = "semlynn";
+
+    sem_t *sem_lynn = sem_open(semaforolynn, O_CREAT, 0644,cajas);
+
     char clientes[1000]; // IGNORE ESTA MIERDA
 
     QList<QLabel*> nucli;
@@ -84,6 +97,13 @@ public:
 
 
     Shared_mem memo;
+
+
+    /// INTENTO PRUEBA
+    struct datescajas {
+        bool state;
+        int numerocaja;
+    };
     ~banco();
 
 private slots:

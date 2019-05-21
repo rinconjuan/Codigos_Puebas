@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <QTimer>
 #include <QDebug>
+#include <semaphore.h>
 
 
 
@@ -38,7 +39,7 @@ banco::banco(QWidget *parent) :
 
      timermem = new QTimer(this);
      connect(timermem, SIGNAL(timeout()), this, SLOT(leermemoria()));
-     timermem-> start(10);
+     timermem-> start(100);
 
 
 
@@ -58,28 +59,40 @@ banco::~banco()
 void banco::mostrarcajas()
 {
 
-    int x = atoi(cajas);
+
 
     QPixmap test = QPixmap(QString::fromUtf8("/home/juan/labanco/office.png"));
-    QVector<QLabel*> numcajas(x);
+    int x = atoi(cajas);
     for(int k=0; k < x; k++)
     {
-        i += 70;
+        i += 150;
+
+
+
         QLabel  *Caj = new QLabel(this);
         int w = Caj->width();
         int h = Caj->height();
-        Caj -> setGeometry(10+i,100,200,200);
+        Caj -> setObjectName(cajas+QString(ggcaja));
+        Caj -> setGeometry(pox + i,poy,tah,tal);
         Caj -> setPixmap(test);
         Caj ->setPixmap(test.scaled(w+20,h+20,Qt::KeepAspectRatio));
+        //Caj->setText(Caj->objectName());
         Caj->show();
         numcajas.insert(k,Caj);
+        ggcaja ++;
+
+
+
         //ui->label->deleteLater();
     }
+
 
 }
 
 void banco::leermemoria()
 {
+
+
     ptr_memoria =mmap(0, SIZE, PROT_READ |  PROT_WRITE, MAP_SHARED, shm_fd_memoria, 0);
     ptr_aviso =mmap(0, SIZE, PROT_READ |  PROT_WRITE, MAP_SHARED, shm_fd_aviso, 0);
 
@@ -95,6 +108,10 @@ void banco::leermemoria()
 
     reset = (int *)ptr_aviso;
     muffler = (int *)reset + sizeof(reset);
+
+    envio =(int *)muffler + 64;
+    cajarecibo = (int *)muffler + 96;
+
     //posicion =(int *)muffler + sizeof(muffler);
 
     printf("RESET= %i\n", *reset);
@@ -102,43 +119,103 @@ void banco::leermemoria()
 
     *muffler = numc;
 
+    ggcaja = 0;
+
     if(*estado == 1)
     {
-        j += 70;
+
+        j+=70;
+
+        nombreenvio = (int *)muffler + 80;
+
 
         nucli << new QLabel(this);
 
-
         QPixmap pix("/home/juan/labanco/person.png");
-        QPixmap ima = pix.scaled(120,120);
+        QPixmap ima = pix.scaled(10,10);
         nucli.at(numc) -> setPixmap(ima);
-        int w = Cliente->width();
-        int h = Cliente->height();
-        nucli.at(numc) -> setGeometry(10+j,225,50,50);
+        int w = 10;
+        int h = 10;
+
         nucli.at(numc) -> setPixmap(ima);
-        nucli.at(numc) -> setPixmap(ima.scaled(w,h,Qt::KeepAspectRatio));
 
         nombrescliente << new QLabel(this);
-
         nombrescliente.at(numc) -> setGeometry(10+j,280,50,15);
         nombrescliente.at(numc)->setText(name1);
-
-
-
         idsclientes << new QLabel(this);
         idsclientes.at(numc) -> setGeometry(10+j,300,50,15);
         idsclientes.at(numc) ->setText(id1);
 
 
+
+        printf("******* CAJA ES = %i\n", ggcaja);
+
+        bool final = 0;
+        printf("%i\n", final);
+        int o;
+        ggcaja = 0;
+
+        while(final == 0)
+        {
+            for(o = 0; o < (atoi(cajas)); o++)
+            {
+
+                printf("%i\n", atoi(cajas));
+
+
+                if(numcajas.at(o)->objectName() == cajas + QString(ggcaja))
+                {
+
+                    numcajas.at(o)->setObjectName("OCUPADO" + QString(ggcaja));
+                    printf("FUNCIONO");
+
+                    nucli.at(numc) -> setGeometry(numcajas.at(o)->geometry());
+                    nucli.at(numc) -> setPixmap(ima.scaled(w,h,Qt::KeepAspectRatio));
+
+
+
+                    numcajas.at(o) -> setText(numcajas.at(o)->objectName());
+                    numcajas.at(o) -> show();
+                    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``%i\n", ggcaja);
+
+
+                    o = atoi(cajas);
+                    final = 1;
+                    ggcaja++;
+
+
+                }
+                else
+                {
+                    ggcaja++;
+
+                    printf("AUMENTO CAJA = %i\n", ggcaja);
+
+                    if( ggcaja > atoi(cajas) )
+                    {
+                        final = 1;
+
+                    }
+
+                }
+
+
+
+            }
+            o = 0;
+
+        }
+
         nombrescliente.at(numc)->show();
         idsclientes.at(numc)->show();
-
         nucli.at(numc) -> show();
+
+        *nombreenvio = ggcaja;
+
+
+        printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> %i\n", *nombreenvio);
+        ggcaja = 0;
         numc ++;
-
-
-
-
 
         //QPixmap clien = QPixmap(QString::fromUtf8("/home/juan/labanco/person.png"));
         /*int w = Cliente->width();
@@ -184,19 +261,42 @@ void banco::leermemoria()
     if(*reset == 2)
     {
 
+
       printf("__________________________________________________________--%i\n",*muffler);
       *reset = 0;
-      envio =(int *)muffler + 64;
+
       printf("RECBIO = %i\n", *envio);
-      nucli.at(*envio)->setText(" ");
-      nucli.at(*envio)->show();
-      nombrescliente.at(*envio)->setText(" ");
-      idsclientes.at(*envio) -> setText(" ");
-      nombrescliente.at(*envio)-> show();
-      idsclientes.at(*envio)-> show();
+      printf(" / / / / / / / / CAJA A DESBLOQUEAR = %i\n", *cajarecibo);
+      //nucli.at(*envio)->setText(" ");
 
 
-      ethan ++;
+      for(int yy = 0; yy < atoi(cajas); yy++)
+      {
+          if(numcajas.at(yy)-> objectName() == "OCUPADO" + QString(*cajarecibo))
+          {
+              numcajas.at(yy)-> setObjectName(cajas + QString(*cajarecibo));
+
+              nucli.at(*envio)->setVisible(false);
+              nombrescliente.at(*envio)->setText(" ");
+              idsclientes.at(*envio) -> setText(" ");
+              nombrescliente.at(*envio)-> show();
+              idsclientes.at(*envio)-> show();
+
+              ggcaja = 0;
+              //i = i - i*(*cajarecibo + 100);
+              //poyc = poyc - poyc*(*cajarecibo + 1);
+              printf("*  *   *   *   * %i\n", pox);
+              printf("*  *   *   *   * %i\n", poyc);
+
+
+
+
+              numcajas.at(yy)->setText(numcajas.at(yy)->objectName());
+              numcajas.at(yy)->show();
+          }
+
+      }
+
 
     }
 
@@ -222,10 +322,6 @@ void banco::leermemoria()
 
     *reset = 0;
     *estado = 0;
-
-
-
-
 }
 
 void banco::iniciar()
@@ -240,10 +336,16 @@ void banco::iniciar()
     sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0644, 1);
     sem_init(sem_muffler,1,1);
 
+    sem_init(sem_lynn,atoi(cajas),atoi(cajas));
+
+
+
+
+
     shm_fd_memoria = shm_open(name, O_RDWR, 0666);
-
-
     shm_fd_aviso = shm_open(aviso, O_RDWR, 0666);
+
+
 
 
 
