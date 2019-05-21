@@ -27,6 +27,7 @@ const char *name = "MemoriaCompartida"; // Name of the shared memory section
 const char *semaforomem = "smpmem";
 const char *semaforocajas = "sempcajas";
 const char *semaforomuffler = "semmuffler";
+const char *semaforolynn = "semlynn";
 const char *aviso = "MemoriaAviso";
 
 
@@ -54,6 +55,9 @@ int main(int argc, char *argv[])
 	//int *posicion  = 0;
 	int posicion = 0;
 	int *envio = 0;
+	int *nombreenvio = 0;
+	int recibido = 0;
+	int *cajarecibo =0;
 
 	srand(time(NULL));
 
@@ -93,6 +97,8 @@ int main(int argc, char *argv[])
 	sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0600);
 	sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0600);
 	sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0600);
+
+	sem_t *sem_lynn = sem_open(semaforolynn, O_CREAT, 0600);
 	 // CONSULTA DE SEMAFORO; 
 	ptr_memoria = mmap(0, SIZE, PROT_WRITE | PROT_READ, MAP_SHARED, shm_fd_memoria, 0);
 	ptr_aviso = mmap(0, SIZE, PROT_WRITE | PROT_READ, MAP_SHARED, shm_fd_aviso, 0);	
@@ -100,7 +106,13 @@ int main(int argc, char *argv[])
 
 	printf("SEM_ID = %i\n", sem_id);
 	printf("ESPERANDO SEMAFORO...\n");	
+	reset = (int *)ptr_aviso;
+	muffler = (int *)reset + sizeof(reset);
+	posicion = *muffler;
+
+	sem_wait(sem_idc);
 	sem_wait(sem_id);
+
 	printf("| TOMO TOKEN |\n");
 
     name1= (char *)ptr_memoria;
@@ -108,14 +120,19 @@ int main(int argc, char *argv[])
     ed1 = (char *)apellido1 + sizeof(apellido1);
     estado = (int *)ed1 + sizeof(ed1);
 
-    reset = (int *)ptr_aviso;
-    sem_wait(sem_muffler);
-    muffler = (int *)reset + sizeof(reset);
-    //posicion = (int *)muffler + sizeof(muffler);
-    posicion = *muffler;
+    
+    //sem_wait(sem_muffler);
+    
+    nombreenvio = (int *)muffler + 80;
+    cajarecibo = (int *)muffler + 96;
+    
+    *cajarecibo = recibido;
     envio = (int *)muffler + 64;
-    sem_post(sem_muffler);
+    recibido = *nombreenvio;
+    //sem_post(sem_muffler);
+
     printf("MUFFLER = %i\n", posicion);
+    printf("CAJA NO = %i\n", recibido);
 
 
 	sprintf(name1,nombrec);
@@ -131,6 +148,7 @@ int main(int argc, char *argv[])
 	printf("CLIENTE SUSCRITO =) ");	
 
 	sem_post(sem_id);
+	sem_post(sem_idc);
 	printf("FINALIZO \n");
 
 	sem_wait(sem_idc);
@@ -147,12 +165,21 @@ int main(int argc, char *argv[])
 	
 	sem_post(sem_idc);
 
-	*reset = 2;
+
+	sem_wait(sem_idc);
 	sem_wait(sem_muffler);
+	*reset = 2;
+	//sem_wait(sem_muffler);
 	*muffler = posicion;
 	*envio = posicion;
+	*nombreenvio = recibido;
+	*cajarecibo = recibido;
 	printf("ENVIO = %i\n", *muffler);
+	printf("ENVIO = %i\n", *cajarecibo);
+
 	sem_post(sem_muffler);
+	//sem_post(sem_muffler);
+	sem_post(sem_idc);
 	close(shm_fd_memoria);
 	close(shm_fd_aviso);
 
