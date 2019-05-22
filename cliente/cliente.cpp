@@ -136,17 +136,27 @@ int main(int argc, char *argv[])
 	printf("CLIENTE SUSCRITO =D ... ESPERANDO CAJA\n");
 	
 	sem_wait(sem_muffler);
-    *estado = 1;
-    sem_post(sem_muffler);
+	
+    *estado = 1;   
+    
+    
 
     printf("| TOMO CAJA  |\n");
+
 	reset = (int *)ptr_aviso;
 	muffler = (int *)reset + sizeof(reset);
+
 	nombreenvio = (int *)muffler + 80;
     cajarecibo = (int *)muffler + 96;
+
+
+    sem_wait(sem_lynn);
 	posicion = *muffler;
     recibido = *nombreenvio;
     *cajarecibo = recibido;
+    sem_post(sem_lynn);
+    sem_post(sem_muffler);
+ 
     envio = (int *)muffler + 64;
     
     //sem_post(sem_muffler);
@@ -170,9 +180,10 @@ int main(int argc, char *argv[])
 	sem_post(sem_muffler);
 	*muffler = posicion;
 	*envio = posicion;
-
+	sem_wait(sem_lynn);
 	*nombreenvio = recibido;
 	*cajarecibo = recibido;
+	sem_post(sem_lynn);
 	sem_post(sem_idc);
 	printf("ENVIO CLIENTE No = %i\n", *muffler);
 	printf("ENVIO CAJA No = %i\n", *cajarecibo);	
