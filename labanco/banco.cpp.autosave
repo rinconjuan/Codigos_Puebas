@@ -1644,7 +1644,6 @@ void banco::leermemoria()
                       printf("ENVIO ES = %i\n",*envio);
 
                       numcajas.at(yy)-> setObjectName("0");
-
                       nucli.at(*envio)->setVisible(false);
                       nombrescliente.at(*envio)->setText(" ");
                       idsclientes.at(*envio) -> setText(" ");
@@ -1652,9 +1651,6 @@ void banco::leermemoria()
                       idsclientes.at(*envio)-> show();
 
                       enquecaja[yy] = 0;
-
-
-                      ggcaja = 0;
                       //i = i - i*(*cajarecibo + 100);
                       //poyc = poyc - poyc*(*cajarecibo + 1);
                       printf("*  *   *   *   * %i\n", pox);

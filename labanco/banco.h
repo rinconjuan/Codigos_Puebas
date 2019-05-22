@@ -27,7 +27,9 @@ class banco : public QMainWindow
 public:
     explicit banco(QWidget *parent = nullptr);
     char *cajas;
-    QLabel Caja[100];
+
+    int enquecaja[10] = {0,0,0,0,0,0,0,0,0,0};
+
     int i = 0;
     int j = 0;
     int u = 0;
@@ -70,6 +72,8 @@ public:
 
     QVector<QLabel*> numcajas;
     QVector<QLabel*> numeclientes;
+
+
 
 
 
