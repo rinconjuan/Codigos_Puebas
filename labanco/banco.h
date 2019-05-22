@@ -69,6 +69,7 @@ public:
 
 
     QVector<QLabel*> numcajas;
+    QVector<QLabel*> numeclientes;
 
 
 
@@ -85,6 +86,8 @@ public:
     const char *semaforolynn = "semlynn";
 
     sem_t *sem_lynn = sem_open(semaforolynn, O_CREAT, 0644,cajas);
+    sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0644, 0);
+    sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0644, 1);
 
     char clientes[1000]; // IGNORE ESTA MIERDA
 
@@ -114,6 +117,7 @@ private slots:
 private:
     Ui::banco *ui;
     QTimer *timermem;
+    QTimer *tprueba;
 };
 
 #endif // BANCO_H

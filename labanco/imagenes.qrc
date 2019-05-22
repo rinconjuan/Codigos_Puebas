@@ -2,5 +2,7 @@
     <qresource prefix="/new/prefix1">
         <file>pp.png</file>
         <file>descarga.png</file>
+        <file>office.png</file>
+        <file>person.png</file>
     </qresource>
 </RCC>
