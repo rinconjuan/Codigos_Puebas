@@ -89,7 +89,7 @@ public:
 
     const char *semaforolynn = "semlynn";
 
-    sem_t *sem_lynn = sem_open(semaforolynn, O_CREAT, 0644,cajas);
+    sem_t *sem_lynn = sem_open(semaforolynn, O_CREAT, 0644,1);
     sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0644, 0);
     sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0644, 1);
 
