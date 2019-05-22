@@ -96,92 +96,90 @@ int main(int argc, char *argv[])
 
 	sem_t *sem_id = sem_open(semaforomem, O_CREAT, 0600);
 	sem_t *sem_idc = sem_open(semaforocajas, O_CREAT, 0600);
-	sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0600);
 
+
+	sem_t *sem_muffler = sem_open(semaforomuffler, O_CREAT, 0600);
 	sem_t *sem_lynn = sem_open(semaforolynn, O_CREAT, 0600);
+
 	 // CONSULTA DE SEMAFORO; 
 	ptr_memoria = mmap(0, SIZE, PROT_WRITE | PROT_READ, MAP_SHARED, shm_fd_memoria, 0);
 	ptr_aviso = mmap(0, SIZE, PROT_WRITE | PROT_READ, MAP_SHARED, shm_fd_aviso, 0);	
 
 
+
 	printf("SEM_ID = %i\n", sem_id);
 	printf("ESPERANDO SEMAFORO...\n");	
-	reset = (int *)ptr_aviso;
-	muffler = (int *)reset + sizeof(reset);
-	posicion = *muffler;
 
 	sem_wait(sem_idc);
-	sem_wait(sem_id);
+	sem_wait(sem_id);	
 
-	printf("| TOMO TOKEN |\n");
 
-    name1= (char *)ptr_memoria;
+	printf("| ENTRO A LA MEMORIA  |\n");
+
+	name1= (char *)ptr_memoria;
     apellido1 = (char *)name1 + sizeof(name1);
     ed1 = (char *)apellido1 + sizeof(apellido1);
     estado = (int *)ed1 + sizeof(ed1);
 
-    
-    //sem_wait(sem_muffler);
-    
-    nombreenvio = (int *)muffler + 80;
-    cajarecibo = (int *)muffler + 96;
-    
-    *cajarecibo = recibido;
-    envio = (int *)muffler + 64;
-    recibido = *nombreenvio;
-    //sem_post(sem_muffler);
-
-    printf("MUFFLER = %i\n", posicion);
-    printf("CAJA NO = %i\n", recibido);
-
-
-	sprintf(name1,nombrec);
+   	sprintf(name1,nombrec);
 	sprintf(apellido1,apellidoc);
 	sprintf(ed1,idc);
 
-
-	printf("ESPERANDO SUSCRIPCION ...\n");
-	for(int h = 0; h < (1000*10000); h++)
-	{
-		
-	}
-	printf("CLIENTE SUSCRITO =) ");	
-
-	sem_post(sem_id);
-	sem_post(sem_idc);
-	printf("FINALIZO \n");
-
-	sem_wait(sem_idc);
-	*estado = 1;
-	printf("TOMO %i\n", cont);
-
-	for(int i=0; i< tiempo ; i++)
+    for(int i=0; i< 4000000 ; i++)
 	{
 		y = log(pow(i,500));
 	}
 	time_req = clock();
 
-	cout << "Using pow function, it took " << (float)time_req/CLOCKS_PER_SEC << " seconds" << endl;
+	sem_post(sem_id);
+
+	printf("CLIENTE SUSCRITO =D ... ESPERANDO CAJA\n");
 	
-	sem_post(sem_idc);
+	sem_wait(sem_muffler);
+    *estado = 1;
+    sem_post(sem_muffler);
+    
+    printf("| TOMO CAJA  |\n");
+	reset = (int *)ptr_aviso;
+	muffler = (int *)reset + sizeof(reset);
+	nombreenvio = (int *)muffler + 80;
+    cajarecibo = (int *)muffler + 96;
+	posicion = *muffler;
+    recibido = *nombreenvio;
+    *cajarecibo = recibido;
+    envio = (int *)muffler + 64;
+    
+    //sem_post(sem_muffler);
 
+    printf("CLIENTE No = %i\n", posicion);
+    printf("CAJA No = %i\n", recibido);
+   
 
-	sem_wait(sem_idc);
+    for(int i=0; i< tiempo ; i++)
+	{
+		y = log(pow(i,500));
+	}
+	time_req = clock();
+
+	printf("FINALIZO \n");
+	cout << "Using pow function, it took " << (float)time_req/CLOCKS_PER_SEC << " seconds" << endl;
+
+	
 	sem_wait(sem_muffler);
 	*reset = 2;
-	//sem_wait(sem_muffler);
+	sem_post(sem_muffler);
 	*muffler = posicion;
 	*envio = posicion;
 	*nombreenvio = recibido;
-	*cajarecibo = recibido;
-	printf("ENVIO = %i\n", *muffler);
-	printf("ENVIO = %i\n", *cajarecibo);
-
-	sem_post(sem_muffler);
-	//sem_post(sem_muffler);
+	*cajarecibo = posicion;
 	sem_post(sem_idc);
+	printf("ENVIO CLIENTE No = %i\n", *muffler);
+	printf("ENVIO CAJA No = %i\n", *cajarecibo);	
+	
+	
 	close(shm_fd_memoria);
 	close(shm_fd_aviso);
+
 
 
 	return 0;
