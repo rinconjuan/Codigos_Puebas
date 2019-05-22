@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	sem_wait(sem_muffler);
     *estado = 1;
     sem_post(sem_muffler);
-    
+
     printf("| TOMO CAJA  |\n");
 	reset = (int *)ptr_aviso;
 	muffler = (int *)reset + sizeof(reset);
@@ -170,8 +170,9 @@ int main(int argc, char *argv[])
 	sem_post(sem_muffler);
 	*muffler = posicion;
 	*envio = posicion;
+
 	*nombreenvio = recibido;
-	*cajarecibo = posicion;
+	*cajarecibo = recibido;
 	sem_post(sem_idc);
 	printf("ENVIO CLIENTE No = %i\n", *muffler);
 	printf("ENVIO CAJA No = %i\n", *cajarecibo);	
